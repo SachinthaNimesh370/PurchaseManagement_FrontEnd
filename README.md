@@ -369,7 +369,26 @@ Output is placed in `dist/PurchaseManagement.Web/`. The build is optimized and t
 
 ## Environment Configuration
 
-`src/environments/environment.ts`:
+### `.env` File
+
+Frontend configuration variables are defined in [`.env`](file:///c:/Users/sachi/Desktop/Enhanzer/PurchaseManagement.Web/.env) (and template in [`.env.example`](file:///c:/Users/sachi/Desktop/Enhanzer/PurchaseManagement.Web/.env.example)):
+
+```env
+# Backend API Base URL (ASP.NET Core Backend)
+API_URL=http://localhost:5048/api
+NG_APP_API_URL=http://localhost:5048/api
+
+# Frontend Dev Server Settings
+PORT=4200
+HOST=localhost
+
+# Application Mode
+NODE_ENV=development
+```
+
+### Angular Environment Files
+
+`src/environments/environment.ts` / `src/environments/environment.development.ts`:
 
 ```typescript
 export const environment = {
@@ -378,4 +397,4 @@ export const environment = {
 };
 ```
 
-To point to a different backend, update `apiUrl` in this file before building.
+To point to a different backend (e.g. staging or cloud), update `apiUrl` in `environment.ts` / `environment.development.ts` or set your `.env` variables accordingly.
