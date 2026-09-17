@@ -1,0 +1,146 @@
+<div class="login-page">
+  <!-- Enhanzer Brand Header -->
+  <header class="brand-header">
+    <div class="header-container">
+      <div class="brand-logo">
+        <span class="logo-bars">///</span>
+        <span class="logo-text">Enhanzer</span>
+      </div>
+      <div class="brand-contact-info">
+        <div class="contact-item">
+          <span class="contact-label">Phone:</span> (+94) 113 711 600
+        </div>
+        <div class="contact-item">
+          <span class="contact-label">Email:</span> info&#64;enhanzer.com
+        </div>
+        <div class="contact-item">
+          <span class="contact-label">Reg No:</span> PV 95812
+        </div>
+        <div class="contact-item">
+          <span class="contact-label">Web:</span> www.enhanzer.com
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Login Card Content -->
+  <main class="login-main">
+    <div class="login-card">
+      <!-- Title -->
+      <h1 class="login-title">Hi</h1>
+      <p class="login-subtitle">Sign in to your account</p>
+
+      <!-- Server Error Alert -->
+      @if (errorMessage()) {
+        <div class="alert-error" role="alert">
+          <svg class="alert-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form" novalidate>
+        <!-- Email Input Group -->
+        <div class="input-group">
+          <div class="input-wrapper" [class.has-error]="emailControl?.invalid && emailControl?.touched">
+            <!-- Mail Icon -->
+            <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+            </svg>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="Email*"
+              autocomplete="email"
+              class="form-input"
+            />
+          </div>
+          <!-- Email Validation Feedback -->
+          @if (emailControl?.invalid && emailControl?.touched) {
+            <div class="error-message">
+              @if (emailControl?.hasError('required')) {
+                <span>Email is required</span>
+              } @else if (emailControl?.hasError('email')) {
+                <span>Please enter a valid email</span>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Password Input Group -->
+        <div class="input-group">
+          <div class="input-wrapper" [class.has-error]="passwordControl?.invalid && passwordControl?.touched">
+            <!-- Key Icon -->
+            <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m21 2-2 2m-1.5 1.5L16 7m-1.5 1.5L13 10m-1.5 1.5L10 13"></path>
+              <circle cx="7.5" cy="15.5" r="5.5"></circle>
+              <path d="m15.5 4.5 4 4"></path>
+            </svg>
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Password*"
+              autocomplete="current-password"
+              class="form-input"
+            />
+            <!-- Show/Hide Password Toggle -->
+            <button
+              type="button"
+              (click)="togglePasswordVisibility()"
+              class="toggle-password-btn"
+              [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+            >
+              @if (showPassword()) {
+                <!-- Eye Off Icon -->
+                <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                  <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                  <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                  <line x1="2" x2="22" y1="2" y2="22"></line>
+                </svg>
+              } @else {
+                <!-- Eye Icon -->
+                <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              }
+            </button>
+          </div>
+          <!-- Password Validation Feedback -->
+          @if (passwordControl?.invalid && passwordControl?.touched) {
+            <div class="error-message">
+              @if (passwordControl?.hasError('required')) {
+                <span>Password is required</span>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          id="loginBtn"
+          [disabled]="isLoading()"
+          class="login-btn"
+        >
+          @if (isLoading()) {
+            <span class="btn-content">
+              <svg class="spinner" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Loading...</span>
+            </span>
+          } @else {
+            <span>LOGIN</span>
+          }
+        </button>
+      </form>
+    </div>
+  </main>
+</div>
