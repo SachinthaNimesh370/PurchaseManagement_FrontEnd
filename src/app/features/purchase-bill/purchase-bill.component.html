@@ -1,0 +1,301 @@
+<div class="purchase-bill-page">
+  <!-- Top Navigation Header -->
+  <header class="app-topbar">
+    <div class="topbar-inner">
+      <div class="topbar-brand">
+        <div class="brand-badge">
+          <span class="logo-bars">///</span>
+          <span class="brand-text">Enhanzer</span>
+        </div>
+        <div class="divider"></div>
+        <div class="page-title-group">
+          <div class="title-with-icon">
+            <span class="info-icon">ⓘ</span>
+            <h1 class="page-title">Purchase Bill</h1>
+          </div>
+          <span class="page-subtitle">Entries information for the Purchase Bill</span>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="user-pill">
+          <span class="user-avatar">👤</span>
+          <span class="user-email">{{ authService.currentUser() || 'User' }}</span>
+        </div>
+        <button (click)="logout()" class="logout-btn" title="Sign out of session">
+          <span>Logout</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sub Navigation Tabs matching SE_V3E UI -->
+  <div class="tabs-nav-bar">
+    <div class="tabs-container">
+      <div class="main-tabs">
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="activeMainTab() === 'Header'"
+          (click)="activeMainTab.set('Header')">Header</button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="activeMainTab() === 'Details'"
+          (click)="activeMainTab.set('Details')">Details</button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="activeMainTab() === 'Notes'"
+          (click)="activeMainTab.set('Notes')">Notes</button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="activeMainTab() === 'Documents'"
+          (click)="activeMainTab.set('Documents')">Documents</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Section -->
+  <main class="page-main-container">
+    <!-- Sub-tabs bar: Items / Accounts / Taxes -->
+    <div class="subtabs-bar">
+      <button
+        type="button"
+        class="subtab-btn"
+        [class.active]="activeSubTab() === 'Items'"
+        (click)="activeSubTab.set('Items')">Items</button>
+      <button
+        type="button"
+        class="subtab-btn"
+        [class.active]="activeSubTab() === 'Accounts'"
+        (click)="activeSubTab.set('Accounts')">Accounts</button>
+      <button
+        type="button"
+        class="subtab-btn"
+        [class.active]="activeSubTab() === 'Taxes'"
+        (click)="activeSubTab.set('Taxes')">Taxes</button>
+    </div>
+
+    <!-- Notification banners -->
+    @if (errorMessage()) {
+      <div class="banner error-banner" role="alert">
+        <svg class="banner-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    @if (successMessage()) {
+      <div class="banner success-banner" role="status">
+        <svg class="banner-icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        <span>{{ successMessage() }}</span>
+      </div>
+    }
+
+    <!-- Two-column Layout: Form & Item Table on Left, Summary on Right -->
+    <div class="purchase-layout">
+      <!-- Left Column -->
+      <div class="main-left-column">
+        <!-- Purchase Bill Add Form Card -->
+        <div class="form-card">
+          <form [formGroup]="billForm" (ngSubmit)="onAdd()" class="bill-form" novalidate>
+            <!-- Row 1: Item & Batch -->
+            <div class="form-grid-row">
+              <!-- Item Field with Autocomplete -->
+              <div class="field-box autocomplete-container">
+                <label for="itemInput" class="field-label">Item *</label>
+                <div class="input-with-dropdown">
+                  <input
+                    id="itemInput"
+                    type="text"
+                    formControlName="item"
+                    placeholder="Select or search fruit..."
+                    autocomplete="off"
+                    (focus)="onItemInputFocus()"
+                    (blur)="onItemInputBlur()"
+                    class="form-control"
+                    [class.is-invalid]="billForm.get('item')?.invalid && billForm.get('item')?.touched"
+                  />
+                  @if (isItemDropdownOpen() && filteredFruits().length > 0) {
+                    <ul class="autocomplete-list" role="listbox">
+                      @for (fruit of filteredFruits(); track fruit) {
+                        <li
+                          (mousedown)="selectItem(fruit)"
+                          class="autocomplete-item"
+                          role="option"
+                        >
+                          {{ fruit }}
+                        </li>
+                      }
+                    </ul>
+                  }
+                </div>
+                @if (billForm.get('item')?.invalid && billForm.get('item')?.touched) {
+                  <span class="field-error">Item is required</span>
+                }
+              </div>
+
+              <!-- Batch Dropdown -->
+              <div class="field-box">
+                <label for="batchSelect" class="field-label">
+                  Batch (Location) *
+                  @if (isLoadingLocations()) {
+                    <span class="loading-tag">Loading...</span>
+                  }
+                </label>
+                <select
+                  id="batchSelect"
+                  formControlName="batch"
+                  class="form-control"
+                  [class.is-invalid]="billForm.get('batch')?.invalid && billForm.get('batch')?.touched"
+                >
+                  <option value="" disabled>-- Select Batch --</option>
+                  @for (opt of batchOptions(); track opt) {
+                    <option [value]="opt">{{ opt }}</option>
+                  }
+                </select>
+                @if (billForm.get('batch')?.invalid && billForm.get('batch')?.touched) {
+                  <span class="field-error">Batch is required</span>
+                }
+              </div>
+            </div>
+
+            <!-- Row 2: Standard Cost, Standard Price, Margin -->
+            <div class="form-grid-row three-cols">
+              <div class="field-box">
+                <label for="standardCost" class="field-label">Standard Cost *</label>
+                <input
+                  id="standardCost"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  formControlName="standardCost"
+                  class="form-control text-right"
+                  [class.is-invalid]="billForm.get('standardCost')?.invalid && billForm.get('standardCost')?.touched"
+                />
+                @if (billForm.get('standardCost')?.invalid && billForm.get('standardCost')?.touched) {
+                  <span class="field-error">Cost must be 0 or greater</span>
+                }
+              </div>
+
+              <div class="field-box">
+                <label for="standardPrice" class="field-label">Standard Price *</label>
+                <input
+                  id="standardPrice"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  formControlName="standardPrice"
+                  class="form-control text-right"
+                  [class.is-invalid]="billForm.get('standardPrice')?.invalid && billForm.get('standardPrice')?.touched"
+                />
+                @if (billForm.get('standardPrice')?.invalid && billForm.get('standardPrice')?.touched) {
+                  <span class="field-error">Price must be 0 or greater</span>
+                }
+              </div>
+
+              <div class="field-box">
+                <label class="field-label">Margin</label>
+                <div class="readonly-value text-right font-medium text-emerald-600">
+                  {{ previewMargin() | number:'1.2-2' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 3: Qty, Free Qty, Discount % -->
+            <div class="form-grid-row three-cols">
+              <div class="field-box">
+                <label for="quantity" class="field-label">Qty *</label>
+                <input
+                  id="quantity"
+                  type="number"
+                  min="1"
+                  formControlName="quantity"
+                  class="form-control text-center font-bold"
+                  [class.is-invalid]="billForm.get('quantity')?.invalid && billForm.get('quantity')?.touched"
+                />
+                @if (billForm.get('quantity')?.invalid && billForm.get('quantity')?.touched) {
+                  <span class="field-error">Qty must be &gt; 0</span>
+                }
+              </div>
+
+              <div class="field-box">
+                <label class="field-label">Free Qty</label>
+                <input
+                  type="number"
+                  disabled
+                  value="0"
+                  class="form-control text-center disabled-control"
+                />
+              </div>
+
+              <div class="field-box">
+                <label for="discount" class="field-label">Discount (%) *</label>
+                <input
+                  id="discount"
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="100"
+                  formControlName="discount"
+                  class="form-control text-right"
+                  [class.is-invalid]="billForm.get('discount')?.invalid && billForm.get('discount')?.touched"
+                />
+                @if (billForm.get('discount')?.invalid && billForm.get('discount')?.touched) {
+                  <span class="field-error">Discount: 0–100%</span>
+                }
+              </div>
+            </div>
+
+            <!-- Row 4: Total Cost, Total Selling, and Add Button -->
+            <div class="form-grid-row action-row">
+              <div class="field-box">
+                <label class="field-label">Total Cost (Calculated)</label>
+                <div class="readonly-value highlighted-cost text-right font-bold" id="previewTotalCost">
+                  {{ previewTotalCost() | number:'1.2-2' }}
+                </div>
+              </div>
+
+              <div class="field-box">
+                <label class="field-label">Total Selling (Calculated)</label>
+                <div class="readonly-value highlighted-selling text-right font-bold" id="previewTotalSelling">
+                  {{ previewTotalSelling() | number:'1.2-2' }}
+                </div>
+              </div>
+
+              <div class="field-box add-btn-container">
+                <button
+                  type="submit"
+                  id="addBillItemBtn"
+                  [disabled]="isSaving()"
+                  class="add-item-btn"
+                >
+                  @if (isSaving()) {
+                    <span class="btn-spinner"></span>
+                    <span>Adding...</span>
+                  } @else {
+                    <span class="plus-icon">+</span>
+                    <span>Add</span>
+                  }
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Reusable Items Table Component -->
+        <app-item-table [items]="items()"></app-item-table>
+      </div>
+
+      <!-- Right Column: Reusable Summary Component -->
+      <div class="main-right-column">
+        <app-item-summary [summary]="summary()" [items]="items()"></app-item-summary>
+      </div>
+    </div>
+  </main>
+</div>

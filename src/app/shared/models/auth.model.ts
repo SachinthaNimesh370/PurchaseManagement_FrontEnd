@@ -4,10 +4,9 @@ export interface LoginRequest {
 }
 
 export interface LocationDto {
-  location_Code?: string;
-  location_Name?: string;
-  locationCode?: string;
-  locationName?: string;
+  // Backend uses [JsonPropertyName("Location_Code")] and [JsonPropertyName("Location_Name")]
+  Location_Code?: string;
+  Location_Name?: string;
 }
 
 export interface LoginResponse {
